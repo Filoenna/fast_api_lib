@@ -1,0 +1,30 @@
+version: "3.7"
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - './:/app'
+    ports:
+      - 8000:8000
+    environment:
+      USER: filoenna
+      PASSWORD: secretkey
+      DATABASE: Library
+      GOOGLE_API_KEY: AIzaSyBZqFtQbl2I_tlbuHja4EoesmHVyg4rQWY
+      JWT_SECRET: imperaresibimaximumestimperium
+    depends_on:
+      - "mongo"
+    command: "uvicorn app.main:app  --host 0.0.0.0  --port 8000  --log-level debug"
+
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - ./data/mongo:/data/db
+      - ./data/mongo-init:/docker-entrypoint-initdb.d
+    ports:
+      - "27017:27017"
+
