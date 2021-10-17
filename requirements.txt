@@ -6,3 +6,4 @@ requests==2.26.0
 passlib==1.7.4
 py-bcrypt==0.4
 pyjwt==2.2.0
+python-jose[cryptography]==3.3.0
