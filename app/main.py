@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, Depends
+from fastapi import FastAPI, status, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.hash import bcrypt
@@ -20,14 +20,14 @@ DATABASE = os.getenv("DATABASE")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 JWT_SECRET = os.getenv("JWT_SECRET")
 
-conn_str = f"mongodb+srv://{USER}:{PASSWORD}@learning.g5nb0.mongodb.net/{DATABASE}?retryWrites=true&w=majority"
+conn_str = f"mongodb://{USER}:{PASSWORD}@fast_api_lib_mongo_1:27017/{DATABASE}?authSource=admin"
 
 # set a 5-second connection timeout
 client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 
 db = client.library
-books_collection = db.books_collection
-users_collection = db.users_collection
+books_collection = db.books
+users_collection = db.users
 app = FastAPI()
 
 
@@ -46,12 +46,8 @@ class Book(BaseModel):
 
 class User(BaseModel):
 
-    username: str = Field(unique=True)
+    username: str
     password_hash: str
-
-    @classmethod
-    def get_user(cls, username):
-        return cls.get(username=username)
 
     def verify_password(self, password):
         return bcrypt.verify(password, self.password_hash)
@@ -61,12 +57,23 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def authenticate_user(username: str, password: str):
-    user = User(**users_collection.find_one({"username": username}))
-    if not user:
-        return False
-    if not user.verify_password(password):
+    user = users_collection.find_one({"username": username})
+    if not user or not User(**user).verify_password(password):
         return False
     return user
+
+
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        print(f"Payload {payload}")
+        return True
+        # user = User(**users_collection.find_one({"username": payload.username}))
+    except:
+        raise HTTPException(
+            status_code=os.status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+        )
 
 
 @app.post("/token")
@@ -75,7 +82,7 @@ def generate_token(form_data: OAuth2PasswordRequestForm = Depends()):
 
     if not user:
         return {"error": "Invalid credentials"}
-    token = jwt.encode(user.dict(), JWT_SECRET)
+    token = jwt.encode({"id": str(user["_id"])}, JWT_SECRET)
     return {"access_token": token, "token_type": "bearer"}
 
 
@@ -88,8 +95,6 @@ def root():
         book_list.append(Book(**book))
     for item in response.json()["items"]:
         book_list.append(item)
-        print(item)
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
     return book_list
 
 
@@ -108,8 +113,14 @@ def get_users():
     users = users_collection.find({})
     user_list = []
     for user in users:
+        print(f"User: {user['_id']}")
         user_list.append(User(**user))
     return user_list
+
+
+@app.get("/users/me")
+def get_user(user: User = Depends(get_current_user)):
+    return user
 
 
 @app.post("/book")
