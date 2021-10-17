@@ -1,5 +1,5 @@
-/data
-/data/mongo
+./data
+./data/mongo
 .written.turtle
 .bson
 .lock
