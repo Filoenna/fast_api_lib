@@ -42,6 +42,14 @@ fake_users_db = {
     },
 }
 
+conn_str = f"mongodb://{USER}:{PASSWORD}@fast_api_lib_mongo_1:27017/{DATABASE}?authSource=admin"
+
+# set a 5-second connection timeout
+client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
+
+db = client.library
+users_collection = db.users
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 

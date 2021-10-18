@@ -21,19 +21,18 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 router = APIRouter(
     prefix="/books",
     tags=["books"],
-    dependencies=[Depends(get_token_header)],
     responses={404: {"description": "Not found"}},
 )
 
 
-conn_str = f"mongodb://{USER}:{PASSWORD}@fast_api_lib_mongo_1:27017/{DATABASE}?authSource=admin"
+conn_str = f"mongodb://{USER}:{PASSWORD}@mongo:27017/"
 
 # set a 5-second connection timeout
 client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 
 db = client.library
 books_collection = db.books
-users_collection = db.users
+
 
 response = requests.get(
     f"https://www.googleapis.com/books/v1/volumes?q=sisters+inauthor:pratchett&key={GOOGLE_API_KEY}"

@@ -1,0 +1,6 @@
+
+
+// Run a find command to view items sold on April 4th, 2014.
+db.admin.find({});
+
+

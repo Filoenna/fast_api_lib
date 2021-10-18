@@ -1,8 +1,4 @@
-./data
-./data/mongo
-.written.turtle
-.bson
-.lock
+data/mongo
 docker-compose.yaml
 
 Dockerfile
