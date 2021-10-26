@@ -1,21 +1,17 @@
-from fastapi import APIRouter, status, Depends, HTTPException
-from fastapi.responses import RedirectResponse
-from typing import Optional, Literal
-from pymongo import ReturnDocument
-from pydantic import BaseModel, Field
-from dotenv import load_dotenv
-from bson.objectid import ObjectId
-
-from ..dependencies import get_token_header
-
-import pymongo
 import os
 import requests
 
-load_dotenv()
-USER = os.getenv("USER")
-PASSWORD = os.getenv("PASSWORD")
-DATABASE = os.getenv("DATABASE")
+from fastapi import APIRouter, status, Depends, HTTPException
+from pymongo import ReturnDocument
+
+from fastapi.responses import RedirectResponse
+from bson.objectid import ObjectId
+
+from ..dependencies import get_token_header
+from ..db.session import db
+from ..schemas.books import Book
+
+
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 router = APIRouter(
@@ -25,26 +21,12 @@ router = APIRouter(
 )
 
 
-conn_str = f"mongodb://{USER}:{PASSWORD}@mongo:27017/"
-
-# set a 5-second connection timeout
-client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
-
-db = client.library
 books_collection = db.books
 
 
 response = requests.get(
     f"https://www.googleapis.com/books/v1/volumes?q=sisters+inauthor:pratchett&key={GOOGLE_API_KEY}"
 )
-
-
-class Book(BaseModel):
-
-    title: str
-    description: Optional[str]
-    author: str = Field(..., max_length=100)
-    status: Literal["available", "rented"] = "available"
 
 
 @router.get("/")

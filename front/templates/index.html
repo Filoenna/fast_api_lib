@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Welcome to library, 
+        {% if username %}
+            {{ username }}
+        {% else %}
+            Guest
+        {% endif %}
+        !</h1>
+{% endblock %}
+        

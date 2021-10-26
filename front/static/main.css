@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Fleur+De+Leah&family=Open+Sans:ital,wght@0,400;1,700&display=swap');
+body {
+    background-color: #F0EFFE;
+    color: #2F2F28;
+}
+
+.pretty-font {
+    font-family: 'Fleur De Leah', cursive;
+}
+
+.bg-dark, .navbar-dark {
+    background-color: #2F2F28;
+}
+
+.inverted-link.nav-item.nav-link, .pretty-font {
+    color: #F0EFFE;
+}
+
+.inverted-link.nav-item.nav-link:hover, .pretty-font:hover {
+    color: #AF1C1C;
+}
+
+.btn-outline-red {
+    color: #AF1C1C;
+    border-color: #AF1C1C;
+}
+
+.btn-outline-red:hover {
+    color: #F0EFFE;
+    background-color: #AF1C1C;
+    border-color: #AF1C1C;
+}

@@ -1,60 +1,35 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, status, Depends, HTTPException, Request
+from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
+from fastapi.responses import RedirectResponse
+from starlette.responses import HTMLResponse
+
 from jose import JWTError, jwt
-from typing import Optional, Literal
+from typing import Optional
 from datetime import datetime, timedelta
 from pymongo import ReturnDocument
 from pydantic import BaseModel, Field
-from dotenv import load_dotenv
 
-
-import pymongo
 import os
 
+from ..db.session import db
+from ..schemas.users import User, UserInDB, UserLoginSchema
 
-load_dotenv()
-USER = os.getenv("USER")
-PASSWORD = os.getenv("PASSWORD")
-DATABASE = os.getenv("DATABASE")
+templates = Jinja2Templates(directory="front/templates")
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 router = APIRouter(
     prefix="/users",
     tags=["users"],
 )
 
-
-fake_users_db = {
-    "johndoe": {
-        "username": "johndoe",
-        "email": "johndoe@example.com",
-        "hashed_password": "fakehashedsecret",
-        "disabled": False,
-    },
-    "alice": {
-        "username": "alice",
-        "email": "alice@example.com",
-        "hashed_password": "fakehashedsecret2",
-        "disabled": True,
-    },
-}
-
-conn_str = f"mongodb://{USER}:{PASSWORD}@fast_api_lib_mongo_1:27017/{DATABASE}?authSource=admin"
-
-# set a 5-second connection timeout
-client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
-
-db = client.library
 users_collection = db.users
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
-def fake_hash_password(password: str):
-    return "fakehashed" + password
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token")
 
 
 class Token(BaseModel):
@@ -64,17 +39,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
-
-
-class User(BaseModel):
-
-    username: str
-    email: Optional[str] = None
-    disabled: Optional[bool] = None
-
-
-class UserInDB(User):
-    hashed_password: str
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -89,13 +53,13 @@ def get_password_hash(password):
 
 
 def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+    user = db.find_one({"username": username})
+    if user:
+        return UserInDB(**user)
 
 
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
+def authenticate_user(db, username: str, password: str):
+    user = get_user(db, username)
     if not user or not verify_password(password, user.hashed_password):
         return False
     return user
@@ -126,7 +90,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = get_user(users_collection, username=token_data.username)
     if not user:
         raise credentials_exception
     return user
@@ -140,7 +104,7 @@ def get_current_active_user(current_user: User = Depends(get_current_user)):
 
 @router.post("/token", response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    user = authenticate_user(users_collection, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -157,3 +121,27 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
 @router.get("/me")
 def read_users_me(current_user: User = Depends(get_current_active_user)):
     return current_user
+
+
+@router.post("/login", response_class=HTMLResponse)
+def login(request: Request, user: UserLoginSchema = Depends(get_current_active_user)):
+    return templates.TemplateResponse(
+        "index.html", {"request": request, "username": user.username}
+    )
+
+
+@router.get("/")
+def get_users():
+    users = users_collection.find({})
+    users_list = []
+    for user in users:
+        users_list.append(UserInDB(**user))
+    return users_list
+
+
+@router.post("/")
+def create_user(user: UserInDB):
+    user.hashed_password = get_password_hash(user.hashed_password)
+    user.disabled = False
+    users_collection.insert_one(user.dict())
+    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
