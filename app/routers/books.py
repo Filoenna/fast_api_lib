@@ -7,7 +7,6 @@ from pymongo import ReturnDocument
 from fastapi.responses import RedirectResponse
 from bson.objectid import ObjectId
 
-from ..dependencies import get_token_header
 from ..db.session import db
 from ..schemas.books import Book
 

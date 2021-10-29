@@ -3,9 +3,9 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import HTMLResponse
 
-from .dependencies import get_query_token, get_token_header
 from .internal import admin
 from .routers import books, users
+from .core import security
 
 app = FastAPI()
 
@@ -15,6 +15,7 @@ app.mount("/static", StaticFiles(directory="front/static"), name="static")
 
 app.include_router(users.router)
 app.include_router(books.router)
+app.include_router(security.router)
 
 
 app.include_router(
