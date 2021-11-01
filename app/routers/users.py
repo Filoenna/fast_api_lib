@@ -12,7 +12,6 @@ from app.webapps.auth.forms import LoginForm
 from ..db.session import db
 from ..schemas.users import UserInDB
 from ..core.security import (
-    get_current_active_user,
     get_password_hash,
     login_for_access_token,
 )
@@ -29,11 +28,12 @@ router = APIRouter(
 )
 
 users_collection = db.users
+template_directory = "auth/login.html"
 
 
 @router.get("/login", response_class=HTMLResponse)
 def login(request: Request):
-    return templates.TemplateResponse("auth/login.html", {"request": request})
+    return templates.TemplateResponse(template_directory, {"request": request})
 
 
 @router.post("/login", response_class=HTMLResponse)
@@ -43,14 +43,14 @@ async def login(request: Request):
     if await form.is_valid():
         try:
             form.__dict__.update(msg="Login Succesfull :)")
-            response = templates.TemplateResponse("auth/login.html", form.__dict__)
+            response = templates.TemplateResponse(template_directory, form.__dict__)
             login_for_access_token(response=response, form_data=form)
             return response
         except HTTPException:
             form.__dict__.update(msg="")
             form.__dict__.get("errors").append("Incorrect Email or Password")
-            return templates.TemplateResponse("auth/login.html", form.__dict__)
-    return templates.TemplateResponse("auth/login.html", form.__dict__)
+            return templates.TemplateResponse(template_directory, form.__dict__)
+    return templates.TemplateResponse(template_directory, form.__dict__)
 
 
 @router.get("/")
