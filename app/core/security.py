@@ -17,7 +17,7 @@ ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 
-oauth2_scheme = OAuth2PasswordBearerWithCookie(tokenUrl="users/token")
+oauth2_scheme = OAuth2PasswordBearerWithCookie(token_url="users/token")
 
 users_collection = db.users
 

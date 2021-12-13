@@ -1,0 +1,48 @@
+version: "3.7"
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - './:/app'
+    ports:
+      - 8000:8000
+    environment:
+      USER: filoenna
+      PASSWORD: secretkey
+      DATABASE: library
+      GOOGLE_API_KEY: AIzaSyBZqFtQbl2I_tlbuHja4EoesmHVyg4rQWY
+      SECRET_KEY: a6be1464ea3b6dff2f835b6f19e9ee08d4dd70199fa7fff69f16188761e6fff2
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      CLIENT_ID: 504031961389-p7op88tcc00v1p1rv5vjlj1t1ak785um.apps.googleusercontent.com
+      CLIENT_SECRET: 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
+    depends_on:
+      - "mongo"
+    command: "uvicorn app.main:app  --host 0.0.0.0  --reload --port 8000  --log-level debug"
+
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - ./data/mongo:/data/db
+      - ./data/mongo-init:/docker-entrypoint-initdb.d
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: filoenna
+      MONGO_INITDB_ROOT_PASSWORD: secretkey
+
+
+  socket_server:
+    build:
+      context: ./
+      dockerfile: Dockerfile-socket
+    volumes:
+      - './:/socket-server'
+    ports:
+      - 8000:8000
+    environment:
+    command: "uvicorn app.main:app  --host 0.0.0.0  --reload --port 8000  --log-level debug"
