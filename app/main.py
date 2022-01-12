@@ -1,16 +1,6 @@
-import socket
-import select
-import errno
-import sys
-import os
-
 from fastapi import (
     FastAPI,
     Request,
-    Depends,
-    HTTPException,
-    WebSocket,
-    WebSocketDisconnect,
 )
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -21,8 +11,6 @@ from starlette.middleware.sessions import SessionMiddleware
 
 
 from authlib.integrations.starlette_client import OAuth
-
-from typing import Optional, List
 
 from .internal import admin
 from .routers import books, users

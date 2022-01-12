@@ -3,7 +3,7 @@ import requests
 
 from dotenv import load_dotenv
 
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, status
 from pymongo import ReturnDocument
 
 from fastapi.responses import RedirectResponse

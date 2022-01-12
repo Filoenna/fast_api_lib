@@ -1,6 +1,6 @@
 from fastapi import status, Depends, HTTPException, APIRouter, Response
 from pydantic import BaseModel
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from typing import Optional
