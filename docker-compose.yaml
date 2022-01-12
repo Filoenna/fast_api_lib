@@ -19,9 +19,12 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
       CLIENT_ID: 504031961389-p7op88tcc00v1p1rv5vjlj1t1ak785um.apps.googleusercontent.com
       CLIENT_SECRET: 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
+      SERVER_ADDR: socket_server
+      SERVER_PORT: 5000
     depends_on:
       - "mongo"
-    command: "uvicorn app.main:app  --host 0.0.0.0  --reload --port 8000  --log-level debug"
+    command: "uvicorn app.main:app  --host 0.0.0.0  --reload --port
+      8000  --log-level debug"
 
   mongo:
     image: mongo
@@ -35,14 +38,12 @@ services:
       MONGO_INITDB_ROOT_USERNAME: filoenna
       MONGO_INITDB_ROOT_PASSWORD: secretkey
 
-
   socket_server:
     build:
       context: ./
       dockerfile: Dockerfile-socket
     volumes:
-      - './:/socket-server'
+      - ./socket-server:/socket-server
     ports:
-      - 8000:8000
-    environment:
-    command: "uvicorn app.main:app  --host 0.0.0.0  --reload --port 8000  --log-level debug"
+      - 5000:5000
+    command: "python server.py"

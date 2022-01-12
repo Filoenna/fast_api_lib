@@ -8,12 +8,16 @@
             Guest
         {% endif %}
         !
+    </h1>
         {% if user != None %}
             <pre>Email: {{ user.email }}</pre><br>
             <a href="/docs">documentation</a><br>
             <a href="/logout">logout</a>
+
+        {% else %}
+            <a href="/login" class="m-5 success">Login</a>
         {% endif %}
-    </h1>
-    <a href="/login" class="m-5 success">Login</a>
+    
+    
 {% endblock %}
         
