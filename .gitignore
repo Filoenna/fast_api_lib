@@ -1,9 +1,4 @@
 data/mongo
-docker-compose.yaml
-
-Dockerfile
-Dockerfile-socket
-
 
 
 
