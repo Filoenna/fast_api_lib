@@ -9,8 +9,12 @@ from .utils import OAuth2PasswordBearerWithCookie
 
 import os
 
+from dotenv import load_dotenv
+
 from ..db.session import db
 from ..schemas.users import User, UserInDB
+
+load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")

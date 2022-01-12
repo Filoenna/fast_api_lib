@@ -7,6 +7,8 @@ from starlette.responses import HTMLResponse
 
 import os
 
+from dotenv import load_dotenv
+
 from app.webapps.auth.forms import LoginForm
 
 from ..db.session import db
@@ -15,6 +17,8 @@ from ..core.security import (
     get_password_hash,
     login_for_access_token,
 )
+
+load_dotenv()
 
 templates = Jinja2Templates(directory="front/templates")
 

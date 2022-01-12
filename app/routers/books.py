@@ -1,6 +1,8 @@
 import os
 import requests
 
+from dotenv import load_dotenv
+
 from fastapi import APIRouter, status, Depends, HTTPException
 from pymongo import ReturnDocument
 
@@ -10,6 +12,7 @@ from bson.objectid import ObjectId
 from ..db.session import db
 from ..schemas.books import Book
 
+load_dotenv()
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
